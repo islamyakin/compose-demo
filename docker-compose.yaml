@@ -1,21 +1,39 @@
 version: '3.9'
 services:
   app:
-    image: nginx:latest
-    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+#    image: nurulyakin/demo:v1.0.0
+    container_name: demo-app
     ports:
-      - 80:80
+      - 8800:80
+    networks:
+      - demo-network
     depends_on:
-      - pg
-    networks:
-      - app-network
-  pg:
-    image: postgres:15.0-alpine
-    container_name: database
+      - db
+      - cache
+  db:
+    image: mysql:8.0
+    container_name: demo-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: demo-db
+      MYSQL_USER: user-db
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
     ports:
-      - 5432
+      - 3306
     networks:
-      - app-network
+      - demo-network
+  cache:
+    image: memcached:latest
+    container_name: demo-cache
+    restart: always
+    ports:
+      - 11211
+    networks:
+      - demo-network
 networks:
-  app-network:
+  demo-network:
     driver: bridge
